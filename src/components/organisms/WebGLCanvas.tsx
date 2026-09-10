@@ -26,8 +26,9 @@ export const WebGLCanvas: React.FC = () => {
       powerPreference: 'high-performance',
     });
 
-    // Cap devicePixelRatio to 1.5 to eliminate high-DPI rasterizer lag
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    // Optimize devicePixelRatio: 1.0 on mobile to prevent GPU fillrate scroll lag, max 1.5 on desktop
+    const isMobile = window.innerWidth < 768;
+    renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x111113, 1);
     container.appendChild(renderer.domElement);
@@ -200,7 +201,7 @@ export const WebGLCanvas: React.FC = () => {
   return (
     <div
       ref={mountRef}
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+      className="fixed inset-0 pointer-events-none select-none touch-none z-0 overflow-hidden"
       style={{ opacity: 0.8 }}
     />
   );

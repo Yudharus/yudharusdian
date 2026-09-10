@@ -11,23 +11,37 @@ import {
 } from './components';
 
 export function App() {
-  // Initialize Lenis smooth scroll
+  // Initialize Lenis smooth scroll on desktop only (touch screens use fast native momentum scroll)
   useEffect(() => {
+    const isTouchDevice =
+      typeof window !== 'undefined' &&
+      ('ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        window.innerWidth < 1024);
+
+    // On mobile devices, native touch momentum scrolling is superior and never gets stuck
+    if (isTouchDevice) {
+      return;
+    }
+
     const lenis = new Lenis({
       duration: 1.0,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       smoothWheel: true,
+      syncTouch: false,
     });
 
+    let rafId: number;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     return () => {
+      cancelAnimationFrame(rafId);
       lenis.destroy();
     };
   }, []);
@@ -43,7 +57,7 @@ export function App() {
           }
         });
       },
-      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.05, rootMargin: '0px 0px -20px 0px' }
     );
 
     const elements = document.querySelectorAll('.reveal-fade-up');
@@ -60,7 +74,7 @@ export function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#111113] text-[#f4f4f0] selection:bg-white selection:text-black overflow-x-hidden font-sans">
+    <div className="relative min-h-screen bg-[#111113] text-[#f4f4f0] selection:bg-white selection:text-black overflow-x-clip font-sans">
       {/* Optimized Three.js WebGL Interactive Background */}
       <WebGLCanvas />
 
